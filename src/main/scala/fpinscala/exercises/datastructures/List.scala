@@ -47,13 +47,24 @@ object List: // `List` companion object. Contains functions for creating and wor
   def productViaFoldRight(ns: List[Double]) =
     foldRight(ns, 1.0, _ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
-  def tail[A](l: List[A]): List[A] = ???
+  def empty[A] = Nil
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def tail[A](l: List[A]): List[A] = l match
+    case Nil => Nil
+    case Cons(x, xs) => xs
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] = l match 
+    case Nil => Cons(h,  Nil)
+    case Cons(x, xs) => Cons(h, xs)
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  def drop[A](l: List[A], n: Int): List[A] = l match
+    case Nil => Nil
+    case Cons(x, xs) if n > 0 => drop(xs, n - 1)
+    case Cons(x, xs) if n <= 0 => xs
+
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match 
+    case Nil => Nil
+    case Cons(x, xs) => if f(x) then dropWhile(xs, f) else Cons(x, dropWhile(xs, f))
 
   def init[A](l: List[A]): List[A] = ???
 
