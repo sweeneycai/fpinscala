@@ -42,7 +42,7 @@ object List: // `List` companion object. Contains functions for creating and wor
       case Cons(x, xs) => f(x, foldRight(xs, acc, f))
 
   def sumViaFoldRight(ns: List[Int]) =
-    foldRight(ns, 0, (x,y) => x + y)
+    foldRight(ns, 0, _ + _)
 
   def productViaFoldRight(ns: List[Double]) =
     foldRight(ns, 1.0, _ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
@@ -59,43 +59,75 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   def drop[A](l: List[A], n: Int): List[A] = l match
     case Nil => Nil
-    case Cons(x, xs) if n > 0 => drop(xs, n - 1)
-    case Cons(x, xs) if n <= 0 => xs
+    case Cons(x, xs) => 
+      if n > 0 then drop(xs, n - 1) else Cons(x, drop(xs, n - 1))
 
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match 
     case Nil => Nil
     case Cons(x, xs) => if f(x) then dropWhile(xs, f) else Cons(x, dropWhile(xs, f))
 
-  def init[A](l: List[A]): List[A] = ???
+  def init[A](l: List[A]): List[A] = l match
+    case Nil => sys.error("Empty List")
+    case Cons(_, Nil) => Nil
+    case Cons(x, xs) => Cons(x, init(xs))
 
-  def length[A](l: List[A]): Int = ???
+  def length[A](l: List[A]): Int =
+    foldRight(l, 0, (a, b) => b + 1)
 
-  def foldLeft[A,B](l: List[A], acc: B, f: (B, A) => B): B = ???
+  def foldLeft[A,B](l: List[A], acc: B, f: (B, A) => B): B = l match
+    case Nil => acc
+    case Cons(x, xs) => foldLeft(xs, f(acc, x), f)
 
-  def sumViaFoldLeft(ns: List[Int]) = ???
+  def sumViaFoldLeft(ns: List[Int]) =
+    foldLeft(ns, 0, _ + _)
 
-  def productViaFoldLeft(ns: List[Double]) = ???
+  def productViaFoldLeft(ns: List[Double]) =
+    foldLeft(ns, 1.0, _ * _)
 
-  def lengthViaFoldLeft[A](l: List[A]): Int = ???
+  def lengthViaFoldLeft[A](l: List[A]): Int = 
+    foldLeft(l, 0, (b, a) => b + 1)
 
-  def reverse[A](l: List[A]): List[A] = ???
+  def reverse[A](l: List[A]): List[A] =
+    foldLeft(l, List[A](), (b, a) => Cons(a, b))
 
-  def appendViaFoldRight[A](l: List[A], r: List[A]): List[A] = ???
+  def appendViaFoldRight[A](l: List[A], r: List[A]): List[A] =
+    foldRight(r, l, (a, b) => Cons(a, b))
 
-  def concat[A](l: List[List[A]]): List[A] = ???
+  def concat[A](l: List[List[A]]): List[A] = 
+    foldRight(l, List[A](), appendViaFoldRight)
 
-  def incrementEach(l: List[Int]): List[Int] = ???
+  def incrementEach(l: List[Int]): List[Int] =
+    map(l)(_ + 1)
 
-  def doubleToString(l: List[Double]): List[String] = ???
+  def doubleToString(l: List[Double]): List[String] =
+    map(l)(_.toString)
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def map[A,B](l: List[A])(f: A => B): List[B] = l match 
+    case Nil => Nil
+    case Cons(x, xs) => Cons(f(x), map(xs)(f))
 
-  def filter[A](as: List[A])(f: A => Boolean): List[A] = ???
+  def filter[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, List[A](), (a, b) => if f(a) then Cons(a, b) else b)
 
-  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = ???
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = 
+    foldRight(as, List[B](), (a, b) => appendViaFoldRight(f(a), b))
 
-  def addPairwise(a: List[Int], b: List[Int]): List[Int] = ???
+  def addPairwise(a: List[Int], b: List[Int]): List[Int] =
+    zipWith(a, b)(_ + _)
+
+  def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] = (a, b) match
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(f(x1, x2), zipWith(xs1, xs2)(f))
 
   // def zipWith - TODO determine signature
 
-  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
+  def startWith[A](prefix: List[A], list: List[A]): Boolean = (prefix, list) match 
+    case (Nil, _) => true
+    case (_, Nil) => false // prefix is longer than list 
+    case (Cons(x1, xs1), Cons(x2, xs2)) =>
+      if x1 == x2 then startWith(xs1, xs2) else false
+  
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match 
+    case Nil => false
+    case Cons(x, xs) => if startWith(sub, sup) then true else hasSubsequence(xs, sub)
