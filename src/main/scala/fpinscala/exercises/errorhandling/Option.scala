@@ -19,9 +19,13 @@ enum Option[+A]:
     case None => None
     case Some(a) => f(a)
 
-  def orElse[B>:A](ob: => Option[B]): Option[B] = ???
+  def orElse[B>:A](ob: => Option[B]): Option[B] = this match
+    case None => ob
+    case Some(a) => Some(a)
 
-  def filter(f: A => Boolean): Option[A] = ???
+  def filter(f: A => Boolean): Option[A] = this match 
+    case None => None
+    case Some(a) => if f(a) then Some(a) else None
 
 object Option:
 
@@ -44,8 +48,15 @@ object Option:
 
   def variance(xs: Seq[Double]): Option[Double] = ???
 
-  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = (a, b) match 
+    case (None, _) => None
+    case (_, None) => None
+    case (Some(a), Some(b)) => Some(f(a, b))
 
-  def sequence[A](as: List[Option[A]]): Option[List[A]] = ???
+  def sequence[A](as: List[Option[A]]): Option[List[A]] = 
+    traverse(as)(a => a)
 
-  def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
+  def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = 
+    as.foldRight(Some(List[B]())) { (a, b) =>
+      map2(f(a), b)((a, b) => a +: b)  
+    }
