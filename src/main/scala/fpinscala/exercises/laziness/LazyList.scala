@@ -90,21 +90,43 @@ object LazyList:
     go(0, 1)
   }
 
-  def unfold[A, S](state: S)(f: S => Option[(A, S)]): LazyList[A] = 
-    def go(state: S, acc: LazyList[A]): LazyList[A] = f(state) match
-      case None => acc
-      case Some(a, s) => go(s, cons(a, acc))
-    
-    go(state, LazyList[A]())
+  def unfold[A, S](state: S)(f: S => Option[(A, S)]): LazyList[A] = f(state) match {
+    case None => LazyList.empty[A]
+    case Some((a, s)) => LazyList.cons(a, unfold(s)(f))
+  }
 
   lazy val fibsViaUnfold: LazyList[Int] =
     unfold((0, 1))((a, b) => Some(a, (b, a + b)))
 
   def fromViaUnfold(n: Int): LazyList[Int] =
-    unfold(n)(a => Some(a, a + 1))
+    unfold(n)(a => Some((a, a + 1)))
 
   def continuallyViaUnfold[A](a: A): LazyList[A] =
-    unfold(a)(x => Some(x, x))
+    unfold(a)(x => Some((x, x)))
 
   lazy val onesViaUnfold: LazyList[Int] =
-    continuallyViaUnfold(1)
+    unfold(())(_ => Some((1, ())))
+
+  extension [A, B](ll: LazyList[A])
+    def map(f: A => B): LazyList[B] =
+      unfold(ll) { case Cons(x, xs) => 
+        Some((f(x()), xs()))  
+      }
+
+  extension [A, B](ll: LazyList[A])
+    def flatMap(f: A => LazyList[B]): LazyList[B] = ???
+
+  extension [A](ll: LazyList[A])
+    def foldRight(acc: A)(f: (A, B) => B): LazyList[B] = ???
+
+  extension [A](ll: LazyList[A])
+    def take(n: Int): LazyList[A] = 
+      unfold(ll) { case Cons(x, xs) => 
+        if n > 0 then Some(x(), xs()) else None
+      } 
+
+  extension [A](ll: LazyList[A])
+    def takeWhileViaUnfold(f: A => Boolean): LazyList[A] = 
+      unfold(ll) { case Cons(x, xs) =>
+        if f(x()) then Some((x(), xs())) else None
+      }
