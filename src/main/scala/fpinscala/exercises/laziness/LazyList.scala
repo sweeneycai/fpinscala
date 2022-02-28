@@ -119,14 +119,30 @@ object LazyList:
   extension [A](ll: LazyList[A])
     def foldRight(acc: A)(f: (A, B) => B): LazyList[B] = ???
 
+  // FIXME
   extension [A](ll: LazyList[A])
     def take(n: Int): LazyList[A] = 
       unfold(ll) { case Cons(x, xs) => 
         if n > 0 then Some(x(), xs()) else None
       } 
 
+  // FIXME
   extension [A](ll: LazyList[A])
     def takeWhileViaUnfold(f: A => Boolean): LazyList[A] = 
       unfold(ll) { case Cons(x, xs) =>
         if f(x()) then Some((x(), xs())) else None
+      }
+
+  extension [A, B](ll: LazyList[A])
+    def zipAll(that: LazyList[B]): LazyList[(Option[A], Option[B])] = (ll, that) match {
+      case (_, Empty) => Empty
+      case (Empty, _) => Empty
+      case (Cons(x1, xs1), Cons(x2, xs2)) => 
+        LazyList.cons((Option(x1()), Option(x2())), zipAll(xs1(), xs2()))
+    }
+
+  extension [A, B](ll: LazyList[A])
+    def zipAllViaUnfold(that: LazyList[B]): LazyList[(Option[A], Option[B])] = 
+      unfold((ll, that)) { case (Cons(x1, xs1), Cons(x2, xs2)) =>
+        Some((Option(x1()), Option(x2())), (xs1(), xs2()))  
       }
