@@ -113,7 +113,6 @@ class LazyListSuite extends PropSuite:
     assertEquals(onesViaUnfold.take(n).toList, List.fill(n)(1))
   }
 
-  /*
   test("LazyList.mapViaUnfold")(genSmallInt ** genLazyList) { case (n, lazyList) =>
     assertEquals(lazyList.mapViaUnfold(_ + n).toList, lazyList.toList.map(_ + n))
   }
@@ -126,14 +125,13 @@ class LazyListSuite extends PropSuite:
     assertEquals(lazyList.takeWhileViaUnfold(_ != n).toList, lazyList.toList.takeWhile(_ != n))
   }
 
-  test("LazyList.zipWith")(genLazyList ** genLazyList) { case (first, second) =>
-    assertEquals(first.zipWith(second)(_ + _).toList, first.toList.zip(second.toList).map(_ + _))
-  }
+  // test("LazyList.zipWith")(genLazyList ** genLazyList) { case (first, second) =>
+  //   assertEquals(first.zipWith(second)(_ + _).toList, first.toList.zip(second.toList).map(_ + _))
+  // }
 
-  test("LazyList.zipAll")(genLazyList ** genLazyList) { case (first, second) =>
-    assertEquals(first.zipAll(second).toList, first.toList.map(Some(_)).zipAll(second.toList.map(Some(_)), None, None))
+  test("LazyList.zipAllViaUnfold")(genLazyList ** genLazyList) { case (first, second) =>
+    assertEquals(first.zipAllViaUnfold(second).toList, first.toList.map(Some(_)).zipAll(second.toList.map(Some(_)), None, None))
   }
-   */
 
   test("LazyList.startsWith")(genLazyList ** genLazyList) { case (list1, list2) =>
     assertEquals(list1.startsWith(list2), list1.toList.startsWith(list2.toList))
@@ -141,12 +139,12 @@ class LazyListSuite extends PropSuite:
     assert(list1.startsWith(list1))
   }
 
-/*
-  test("LazyList.tails")(genLazyList) { lazyList =>
-    val list = lazyList.toList
-    val expected = (0 to list.length).map(i => list.drop(i)).toList
-    assertEquals(lazyList.tails.toList.map(_.toList), expected)
-  }
+  // test("LazyList.tails")(genLazyList) { lazyList =>
+  //   val list = lazyList.toList
+  //   val expected = (0 to list.length).map(i => list.drop(i)).toList
+  //   print(lazyList.tails.toList.map())
+  //   assertEquals(lazyList.tails.toList.map(_.toList), expected)
+  // }
 
   test("LazyList.hasSubsequence")(genSmallInt ** genLazyList) { case (n, list) =>
     assert(list.hasSubsequence(Empty))
@@ -158,8 +156,8 @@ class LazyListSuite extends PropSuite:
     assertEquals(list1.hasSubsequence(list2), list1.toList.containsSlice(list2.toList))
   }
 
-  test("LazyList.scanRight")(genLazyList) { lazyList =>
-    assertEquals(lazyList.scanRight(0)(_ + _).toList, lazyList.tails.map(_.toList.sum).toList)
-    assertEquals(lazyList.scanRight(1)(_ * _).toList, lazyList.tails.map(_.toList.product).toList)
-  }
- */
+  // test("LazyList.scanRight")(genLazyList) { lazyList =>
+  //   assertEquals(lazyList.scanRight(0)(_ + _).toList, lazyList.tails.map(_.toList.sum).toList)
+  //   assertEquals(lazyList.scanRight(1)(_ * _).toList, lazyList.tails.map(_.toList.product).toList)
+  // }
+ 
